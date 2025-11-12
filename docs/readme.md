@@ -57,12 +57,19 @@ values.
 - Provide reproducible profiling scripts (`scripts/profile_cuda.py`, `scripts/profile_cpu.py`) that capture runtime, throughput, and bandwidth metrics.
 - Prepare visualization workflows (e.g., ParaView-ready VTK output) and Jupyter notebooks for report figures and presentation assets.
 
+### Current Implementation Status
+
+- **Build System**: CMake-based project with optional CUDA backend target and Catch2 test discovery enabled via `ctest`.
+- **Core CPU Solver**: BGK D2Q9 collide–stream loop with lid-driven cavity boundary, macroscopic field updates, and diagnostic snapshots (`drag`, `lift`, `residual`).
+- **Configuration Handling**: `SimulationConfig` expanded with lid velocity/residual tolerance; builder returns sensible defaults pending YAML/TOML parsing.
+- **Testing**: Catch2 unit tests covering configuration defaults/error cases and CPU backend initialization/convergence run via `ctest --test-dir build`.
+
 ### Project Management
 
 - Define milestones: CPU reference solver, CUDA parity implementation, validation suite, performance optimization/profiling, and report/presentation preparation.
 - Track tasks via issues/roadmap, including a risk register for stability, memory limits, and validation data availability alongside mitigation strategies.
 
-## Suggested Repository Skeleton & Interfaces
+## Repository Skeleton & Interfaces
 
 ### Directory Structure
 
