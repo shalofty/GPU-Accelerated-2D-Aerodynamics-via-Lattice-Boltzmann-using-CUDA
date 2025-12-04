@@ -81,6 +81,15 @@ int main(int argc, char* argv[]) {
         std::cout << "Backend: " << config.backend_id << "\n";
         std::cout << "Max timesteps: " << config.max_timesteps << "\n";
         std::cout << "Relaxation time: " << config.relaxation_time << "\n";
+        std::cout << "Lid velocity: " << config.lid_velocity << "\n";
+        std::cout << "Obstacles: " << config.obstacles.size() << "\n";
+        for (const auto& obs : config.obstacles) {
+            std::cout << "  - " << obs.id << " (" << obs.type << "): ";
+            for (double p : obs.parameters) {
+                std::cout << p << " ";
+            }
+            std::cout << "\n";
+        }
         std::cout << "Output directory: " << output_dir << "\n";
         std::cout << "\n";
         

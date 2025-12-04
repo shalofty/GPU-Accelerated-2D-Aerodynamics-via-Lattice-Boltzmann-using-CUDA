@@ -326,6 +326,7 @@ __global__ void apply_inflow_outflow_kernel(
 
 __global__ void compute_macro_fields_kernel(
     const double* f_curr,
+    const bool* obstacle_mask,
     double* density,
     double* ux,
     double* uy,
@@ -341,6 +342,14 @@ __global__ void compute_macro_fields_kernel(
     
     const std::size_t cell = cell_index(x, y, nx);
     
+    // Skip obstacle cells - set to zero
+    if (obstacle_mask && obstacle_mask[cell]) {
+        density[cell] = 0.0;
+        ux[cell] = 0.0;
+        uy[cell] = 0.0;
+        return;
+    }
+    
     double rho = 0.0;
     double ux_val = 0.0;
     double uy_val = 0.0;
@@ -352,8 +361,13 @@ __global__ void compute_macro_fields_kernel(
         uy_val += fval * static_cast<double>(d_cy[q]);
     }
     
-    ux_val /= rho;
-    uy_val /= rho;
+    if (rho > 1e-10) {
+        ux_val /= rho;
+        uy_val /= rho;
+    } else {
+        ux_val = 0.0;
+        uy_val = 0.0;
+    }
     
     density[cell] = rho;
     ux[cell] = ux_val;
@@ -613,7 +627,7 @@ void CudaLbBackend::compute_macro_fields() {
         (config_.ny + block_dim.y - 1) / block_dim.y);
     
     compute_macro_fields_kernel<<<grid_dim, block_dim>>>(
-        f_curr_, density_, ux_, uy_, config_.nx, config_.ny);
+        f_curr_, obstacle_mask_, density_, ux_, uy_, config_.nx, config_.ny);
     cudaDeviceSynchronize();
     
     // Compute residual on host (simpler than atomic reduction)
