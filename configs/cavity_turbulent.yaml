@@ -1,0 +1,12 @@
+# Turbulent cavity flow - maximum visual complexity
+# Lower relaxation time = higher Re = more vortices and complexity
+
+nx: 256
+ny: 256
+relaxation_time: 0.5  # Very high Reynolds number
+max_timesteps: 12000
+output_interval: 30  # 400 VTK files
+lid_velocity: 0.25  # Strong forcing
+residual_tolerance: 1e-6
+backend_id: "cuda"
+

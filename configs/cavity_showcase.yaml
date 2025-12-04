@@ -1,0 +1,12 @@
+# High-performance showcase configuration for stunning LIC visualizations
+# Optimized for dramatic, complex flow patterns with multiple vortices
+
+nx: 512
+ny: 512
+relaxation_time: 0.55  # Lower = higher Re = more turbulent, complex patterns
+max_timesteps: 10000
+output_interval: 25  # 400 VTK files for smooth animation
+lid_velocity: 0.2  # Higher velocity = stronger forcing = more dramatic flow
+residual_tolerance: 1e-6
+backend_id: "cuda"
+
