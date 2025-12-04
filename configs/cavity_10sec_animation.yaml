@@ -1,0 +1,11 @@
+# Configuration for 10 seconds of smooth animation (300 frames at 30 fps)
+# Generates 300 VTK files for ParaView animation
+nx: 128
+ny: 128
+relaxation_time: 0.6
+max_timesteps: 3000
+output_interval: 10  # Output every 10 timesteps = 300 VTK files (10 seconds @ 30 fps)
+lid_velocity: 0.15
+residual_tolerance: 1e-6
+backend_id: "cuda"
+
