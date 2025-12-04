@@ -20,6 +20,10 @@ target_include_directories(lbm_core
 target_compile_features(lbm_core PUBLIC cxx_std_20)
 
 if(ENABLE_CUDA AND CMAKE_CUDA_COMPILER)
+    target_compile_definitions(lbm_core PUBLIC ENABLE_CUDA)
+endif()
+
+if(ENABLE_CUDA AND CMAKE_CUDA_COMPILER)
     add_library(lbm_cuda STATIC backend/cuda/CudaLbBackend.cu)
     target_include_directories(lbm_cuda
         PUBLIC

@@ -1,7 +1,9 @@
 #include "VtkObserver.hpp"
 
+#include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <typeinfo>
 #include <vector>
 
 #include "../backend/cpu/CpuLbBackend.hpp"
