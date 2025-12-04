@@ -76,6 +76,12 @@ void VtkObserver::write_fields_from_cuda_backend(const DiagnosticSnapshot& snaps
     
     std::vector<double> density, ux, uy;
     cuda_backend->get_field_data(density, ux, uy);
+    
+    // Check if data was retrieved successfully
+    if (density.empty() || ux.empty() || uy.empty()) {
+        return;  // Skip if data not available
+    }
+    
     const auto& config = cuda_backend->config();
     
     std::ostringstream filename;
