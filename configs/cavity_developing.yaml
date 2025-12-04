@@ -1,0 +1,11 @@
+# Simulation focused on capturing flow development
+# Very frequent output to see flow evolution
+nx: 128
+ny: 128
+relaxation_time: 0.6
+max_timesteps: 2000
+output_interval: 10  # Output every 10 timesteps - see rapid changes!
+lid_velocity: 0.15
+residual_tolerance: 1e-6
+backend_id: "cuda"
+

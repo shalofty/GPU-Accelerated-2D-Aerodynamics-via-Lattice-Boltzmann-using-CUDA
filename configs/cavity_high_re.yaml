@@ -1,0 +1,11 @@
+# High Reynolds number lid-driven cavity
+# Lower relaxation time = higher Reynolds number = more dramatic flow
+nx: 256
+ny: 256
+relaxation_time: 0.5  # Lower = higher Re, more turbulent
+max_timesteps: 10000
+output_interval: 100
+lid_velocity: 0.2  # Higher lid velocity for more dramatic effects
+residual_tolerance: 1e-6
+backend_id: "cuda"
+

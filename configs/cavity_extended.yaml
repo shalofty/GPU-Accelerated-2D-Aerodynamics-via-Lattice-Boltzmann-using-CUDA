@@ -1,0 +1,11 @@
+# Extended lid-driven cavity simulation
+# More timesteps and more frequent output for better visualization
+nx: 128
+ny: 128
+relaxation_time: 0.6
+max_timesteps: 5000
+output_interval: 50
+lid_velocity: 0.1
+residual_tolerance: 1e-6
+backend_id: "cuda"
+
