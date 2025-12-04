@@ -1,0 +1,15 @@
+# Cylinder flow optimized for stunning LIC visualizations
+# Wake patterns are extremely visually appealing - very different from cavity!
+
+nx: 400
+ny: 200
+relaxation_time: 0.55  # High Re for complex wake
+max_timesteps: 6000
+output_interval: 15  # 400 VTK files for smooth animation
+residual_tolerance: 1e-6
+backend_id: "cuda"
+obstacles:
+  - id: "cylinder1"
+    type: "cylinder"
+    parameters: [100.0, 100.0, 25.0]  # Large cylinder, dramatic wake
+
