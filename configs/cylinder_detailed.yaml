@@ -1,0 +1,13 @@
+# Detailed cylinder flow with more output points
+nx: 300
+ny: 150
+relaxation_time: 0.6
+max_timesteps: 5000
+output_interval: 50  # More frequent output
+residual_tolerance: 1e-6
+backend_id: "cuda"
+obstacles:
+  - id: "cylinder1"
+    type: "cylinder"
+    parameters: [75.0, 75.0, 15.0]  # Larger cylinder, more dramatic wake
+
