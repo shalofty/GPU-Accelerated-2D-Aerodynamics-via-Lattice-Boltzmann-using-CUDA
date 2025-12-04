@@ -75,12 +75,99 @@ SimulationConfig SimulationConfigBuilder::build() const {
     }
     
     std::string line;
+    bool in_obstacles_section = false;
+    ObstacleDefinition current_obstacle;
+    bool in_obstacle_entry = false;
+    
     while (std::getline(file, line)) {
+        std::string original_line = line;
         line = trim(line);
         
         // Skip empty lines and comments
         if (line.empty() || line[0] == '#') {
             continue;
+        }
+        
+        // Check if we're entering the obstacles section
+        if (line.find("obstacles:") == 0 || line.find("obstacles :") == 0) {
+            in_obstacles_section = true;
+            continue;
+        }
+        
+        // If we're in obstacles section, parse obstacle entries
+        if (in_obstacles_section) {
+            // Check if this is the start of a new obstacle entry (starts with "-")
+            if (line.find("-") == 0) {
+                // Save previous obstacle if we have one
+                if (in_obstacle_entry && !current_obstacle.id.empty()) {
+                    config.obstacles.push_back(current_obstacle);
+                }
+                // Start new obstacle
+                current_obstacle = ObstacleDefinition{};
+                in_obstacle_entry = true;
+                // Check if id is on the same line: "- id: ..."
+                if (line.find("id:") != std::string::npos) {
+                    std::string value = get_value(line.substr(line.find("id:")));
+                    value = trim(value);
+                    if (!value.empty() && value[0] == '"' && value.back() == '"') {
+                        value = value.substr(1, value.length() - 2);
+                    }
+                    current_obstacle.id = value;
+                }
+                continue;
+            }
+            
+            // Parse obstacle fields (indented)
+            if (in_obstacle_entry) {
+                if (line.find("id:") == 0 || (line.size() > 4 && line.substr(0, 4) == "  id:")) {
+                    std::string value = get_value(line);
+                    value = trim(value);
+                    if (!value.empty() && value[0] == '"' && value.back() == '"') {
+                        value = value.substr(1, value.length() - 2);
+                    }
+                    current_obstacle.id = value;
+                } else if (line.find("type:") == 0 || (line.size() > 6 && line.substr(0, 6) == "  type:")) {
+                    std::string value = get_value(line);
+                    value = trim(value);
+                    if (!value.empty() && value[0] == '"' && value.back() == '"') {
+                        value = value.substr(1, value.length() - 2);
+                    }
+                    current_obstacle.type = value;
+                } else if (line.find("parameters:") != std::string::npos || 
+                          (line.size() > 12 && line.substr(0, 12) == "  parameters:")) {
+                    // Parse array: [100.0, 100.0, 25.0]
+                    std::string value = get_value(line);
+                    value = trim(value);
+                    // Remove brackets
+                    if (value[0] == '[') value = value.substr(1);
+                    if (value.back() == ']') value = value.substr(0, value.length() - 1);
+                    
+                    // Split by comma and parse doubles
+                    std::istringstream iss(value);
+                    std::string token;
+                    current_obstacle.parameters.clear();
+                    while (std::getline(iss, token, ',')) {
+                        token = trim(token);
+                        if (!token.empty()) {
+                            double param;
+                            if (parse_double(token, param)) {
+                                current_obstacle.parameters.push_back(param);
+                            }
+                        }
+                    }
+                } else if (!line.empty() && line[0] != ' ' && line[0] != '\t') {
+                    // We've left the obstacles section
+                    in_obstacles_section = false;
+                    if (in_obstacle_entry && !current_obstacle.id.empty()) {
+                        config.obstacles.push_back(current_obstacle);
+                        in_obstacle_entry = false;
+                    }
+                    // Fall through to parse this line as a regular key-value pair
+                } else {
+                    continue;
+                }
+                continue;
+            }
         }
         
         // Parse key-value pairs
@@ -127,6 +214,11 @@ SimulationConfig SimulationConfigBuilder::build() const {
             }
             config.backend_id = value;
         }
+    }
+    
+    // Save last obstacle if we were still parsing one
+    if (in_obstacle_entry && !current_obstacle.id.empty()) {
+        config.obstacles.push_back(current_obstacle);
     }
     
     return config;
