@@ -1,7 +1,12 @@
 set(LBM_CORE_SOURCES
     core/SimulationRunner.cpp
     analysis/PerformanceLogger.cpp
+    analysis/CudaProfiler.cpp
+    analysis/VtkObserver.cpp
+    analysis/DragLiftCalculator.cpp
+    analysis/ValidationSuite.cpp
     io/SimulationConfigBuilder.cpp
+    io/VtkWriter.cpp
     backend/cpu/CpuLbBackend.cpp
 )
 
@@ -25,4 +30,13 @@ if(ENABLE_CUDA AND CMAKE_CUDA_COMPILER)
     target_link_libraries(lbm_cuda PUBLIC lbm_core)
 else()
     message(STATUS "CUDA backend disabled or compiler not found; skipping lbm_cuda target")
+endif()
+
+# Main executable
+add_executable(lbm_sim main.cpp)
+target_link_libraries(lbm_sim PRIVATE lbm_core)
+
+if(ENABLE_CUDA AND CMAKE_CUDA_COMPILER)
+    target_link_libraries(lbm_sim PRIVATE lbm_cuda)
+    target_compile_definitions(lbm_sim PRIVATE ENABLE_CUDA)
 endif()

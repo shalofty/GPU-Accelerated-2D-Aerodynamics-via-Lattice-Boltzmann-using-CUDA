@@ -1,5 +1,6 @@
 #include "PerformanceLogger.hpp"
 
+#include <filesystem>
 #include <iomanip>
 #include <stdexcept>
 
@@ -9,8 +10,23 @@ namespace {
 constexpr const char* kDefaultHeader = "label,start_ms,end_ms,duration_ms";
 }
 
+void PerformanceLogger::on_step(const DiagnosticSnapshot& snapshot) {
+    // Log diagnostic information
+    const auto now = std::chrono::high_resolution_clock::now();
+    const auto time_ms = std::chrono::duration<double, std::milli>(
+        now.time_since_epoch()).count();
+    write_snapshot(snapshot.timestep, time_ms);
+}
+
 PerformanceLogger::PerformanceLogger(std::string output_path)
-    : output_path_(std::move(output_path)), stream_(output_path_, std::ios::out | std::ios::trunc) {
+    : output_path_(std::move(output_path)) {
+    // Create parent directory if needed
+    std::filesystem::path path(output_path_);
+    if (path.has_parent_path()) {
+        std::filesystem::create_directories(path.parent_path());
+    }
+    
+    stream_.open(output_path_, std::ios::out | std::ios::trunc);
     if (!stream_.is_open()) {
         throw std::runtime_error("Failed to open performance log: " + output_path_);
     }

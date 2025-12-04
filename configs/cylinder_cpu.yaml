@@ -1,0 +1,12 @@
+nx: 200
+ny: 100
+relaxation_time: 0.6
+max_timesteps: 1000
+output_interval: 100
+residual_tolerance: 1e-4
+backend_id: "cpu"
+obstacles:
+  - id: "cylinder1"
+    type: "cylinder"
+    parameters: [50.0, 50.0, 10.0]
+

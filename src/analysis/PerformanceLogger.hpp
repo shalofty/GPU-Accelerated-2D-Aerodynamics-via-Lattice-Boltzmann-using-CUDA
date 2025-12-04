@@ -5,12 +5,16 @@
 #include <fstream>
 #include <string>
 
+#include "DiagnosticObserver.hpp"
+
 namespace lbm {
 
-class PerformanceLogger {
+class PerformanceLogger : public DiagnosticObserver {
   public:
     explicit PerformanceLogger(std::string output_path);
 
+    void on_step(const DiagnosticSnapshot& snapshot) override;
+    
     void start_section(const std::string& label);
     void end_section();
     void write_snapshot(std::size_t timestep, double milliseconds);
