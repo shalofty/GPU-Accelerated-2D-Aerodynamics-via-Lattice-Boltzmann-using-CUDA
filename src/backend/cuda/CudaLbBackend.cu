@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cuda_runtime.h>
+#include <iostream>
 #include <numeric>
 #include <stdexcept>
 #include <vector>
@@ -635,9 +637,6 @@ void CudaLbBackend::get_field_data(
     std::vector<double>& uy) const {
     
     const std::size_t cell_count = config_.nx * config_.ny;
-    density.resize(cell_count);
-    ux.resize(cell_count);
-    uy.resize(cell_count);
     
     if (!density_ || !ux_ || !uy_) {
         // Fields not allocated - return empty vectors
@@ -646,6 +645,10 @@ void CudaLbBackend::get_field_data(
         uy.clear();
         return;
     }
+    
+    density.resize(cell_count);
+    ux.resize(cell_count);
+    uy.resize(cell_count);
     
     // Ensure all previous kernels have completed
     cudaDeviceSynchronize();
