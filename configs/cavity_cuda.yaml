@@ -1,9 +1,8 @@
-nx: 64
-ny: 64
-relaxation_time: 0.6
-max_timesteps: 500
-output_interval: 50
-lid_velocity: 0.1
+nx: 128
+ny: 128
+relaxation_time: 0.55
+max_timesteps: 5000
+output_interval: 10
+lid_velocity: 0.25
 residual_tolerance: 1e-4
 backend_id: "cuda"
-
