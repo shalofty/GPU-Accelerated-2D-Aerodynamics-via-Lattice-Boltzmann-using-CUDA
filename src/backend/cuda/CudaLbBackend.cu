@@ -639,10 +639,28 @@ void CudaLbBackend::get_field_data(
     ux.resize(cell_count);
     uy.resize(cell_count);
     
-    if (density_ && ux_ && uy_) {
-        cudaMemcpy(density.data(), density_, cell_count * sizeof(double), cudaMemcpyDeviceToHost);
-        cudaMemcpy(ux.data(), ux_, cell_count * sizeof(double), cudaMemcpyDeviceToHost);
-        cudaMemcpy(uy.data(), uy_, cell_count * sizeof(double), cudaMemcpyDeviceToHost);
+    if (!density_ || !ux_ || !uy_) {
+        // Fields not allocated - return empty vectors
+        density.clear();
+        ux.clear();
+        uy.clear();
+        return;
+    }
+    
+    // Ensure all previous kernels have completed
+    cudaDeviceSynchronize();
+    
+    // Copy from device to host
+    cudaError_t err1 = cudaMemcpy(density.data(), density_, cell_count * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaError_t err2 = cudaMemcpy(ux.data(), ux_, cell_count * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaError_t err3 = cudaMemcpy(uy.data(), uy_, cell_count * sizeof(double), cudaMemcpyDeviceToHost);
+    
+    // Check for errors
+    if (err1 != cudaSuccess || err2 != cudaSuccess || err3 != cudaSuccess) {
+        // If copy failed, clear vectors to indicate failure
+        density.clear();
+        ux.clear();
+        uy.clear();
     }
 }
 
