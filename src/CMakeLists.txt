@@ -20,6 +20,10 @@ target_include_directories(lbm_core
 target_compile_features(lbm_core PUBLIC cxx_std_20)
 
 if(ENABLE_CUDA AND CMAKE_CUDA_COMPILER)
+    # Add CUDA include directories for C++ compilation
+    get_filename_component(CUDA_TOOLKIT_ROOT_DIR "${CMAKE_CUDA_COMPILER}" DIRECTORY)
+    get_filename_component(CUDA_TOOLKIT_ROOT_DIR "${CUDA_TOOLKIT_ROOT_DIR}" DIRECTORY)
+    target_include_directories(lbm_core PUBLIC "${CUDA_TOOLKIT_ROOT_DIR}/include")
     target_compile_definitions(lbm_core PUBLIC ENABLE_CUDA)
 endif()
 

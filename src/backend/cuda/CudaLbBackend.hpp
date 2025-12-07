@@ -1,7 +1,13 @@
 #pragma once
 
 #include <cstddef>
+
+#ifdef ENABLE_CUDA
 #include <cuda_runtime.h>
+#else
+// Forward declarations for when CUDA is not available
+typedef void* cudaStream_t;
+#endif
 
 #include "../../core/SimulationBackend.hpp"
 

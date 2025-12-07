@@ -1,0 +1,49 @@
+# V-formation pattern - like birds flying or military formation
+# Creates interesting wake interactions and flow redirection
+nx: 400
+ny: 350
+relaxation_time: 0.6
+max_timesteps: 5000
+output_interval: 50
+residual_tolerance: 1e-6
+backend_id: "cuda"
+obstacles:
+  # Left wing of V (5 cylinders)
+  - id: "v_left1"
+    type: "cylinder"
+    parameters: [100.0, 50.0, 10.0]
+  - id: "v_left2"
+    type: "cylinder"
+    parameters: [120.0, 100.0, 10.0]
+  - id: "v_left3"
+    type: "cylinder"
+    parameters: [140.0, 150.0, 10.0]
+  - id: "v_left4"
+    type: "cylinder"
+    parameters: [160.0, 200.0, 10.0]
+  - id: "v_left5"
+    type: "cylinder"
+    parameters: [180.0, 250.0, 10.0]
+  
+  # Center/apex of V (1 cylinder)
+  - id: "v_center"
+    type: "cylinder"
+    parameters: [200.0, 175.0, 12.0]  # Slightly larger
+  
+  # Right wing of V (5 cylinders)
+  - id: "v_right1"
+    type: "cylinder"
+    parameters: [300.0, 50.0, 10.0]
+  - id: "v_right2"
+    type: "cylinder"
+    parameters: [280.0, 100.0, 10.0]
+  - id: "v_right3"
+    type: "cylinder"
+    parameters: [260.0, 150.0, 10.0]
+  - id: "v_right4"
+    type: "cylinder"
+    parameters: [240.0, 200.0, 10.0]
+  - id: "v_right5"
+    type: "cylinder"
+    parameters: [220.0, 250.0, 10.0]
+

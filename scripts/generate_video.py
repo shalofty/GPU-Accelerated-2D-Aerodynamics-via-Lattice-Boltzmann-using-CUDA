@@ -228,13 +228,21 @@ def generate_video_python(vtk_files, output_file, field, fps, width, height, col
     # Setup VTK rendering pipeline
     reader = vtk.vtkStructuredPointsReader()
     
+    # For 2D data, convert to image data for better visualization
+    # Create a filter to convert structured points to image data
+    image_data_filter = vtk.vtkImageDataGeometryFilter()
+    image_data_filter.SetInputConnection(reader.GetOutputPort())
+    
     # Create mapper
-    mapper = vtk.vtkDataSetMapper()
-    mapper.SetInputConnection(reader.GetOutputPort())
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(image_data_filter.GetOutputPort())
+    mapper.ScalarVisibilityOn()
     
     # Create actor
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
+    # Use surface representation for 2D data
+    actor.GetProperty().SetRepresentationToSurface()
     
     # Setup lookup table for colormap
     lut = vtk.vtkLookupTable()
@@ -259,13 +267,6 @@ def generate_video_python(vtk_files, output_file, field, fps, width, height, col
     renderer = vtk.vtkRenderer()
     renderer.AddActor(actor)
     renderer.SetBackground(1.0, 1.0, 1.0)  # White background
-    
-    # Setup camera
-    camera = renderer.GetActiveCamera()
-    camera.SetPosition(0, 0, 1000)
-    camera.SetFocalPoint(0, 0, 0)
-    camera.SetViewUp(0, 1, 0)
-    camera.ParallelProjectionOn()
     
     # Create render window (offscreen)
     renderWindow = vtk.vtkRenderWindow()
@@ -292,8 +293,25 @@ def generate_video_python(vtk_files, output_file, field, fps, width, height, col
         data = reader.GetOutput()
         point_data = data.GetPointData()
         
+        # Get the array to display
         if field == "velocity_magnitude":
-            array = point_data.GetArray("velocity_magnitude")
+            # Calculate velocity magnitude if not present
+            vel_array = point_data.GetArray("velocity")
+            if vel_array and vel_array.GetNumberOfComponents() >= 2:
+                # Create velocity magnitude array
+                num_points = vel_array.GetNumberOfTuples()
+                vel_mag = vtk.vtkFloatArray()
+                vel_mag.SetName("velocity_magnitude")
+                vel_mag.SetNumberOfTuples(num_points)
+                for j in range(num_points):
+                    vx = vel_array.GetComponent(j, 0)
+                    vy = vel_array.GetComponent(j, 1)
+                    mag = (vx*vx + vy*vy)**0.5
+                    vel_mag.SetValue(j, mag)
+                point_data.AddArray(vel_mag)
+                array = vel_mag
+            else:
+                array = point_data.GetArray("velocity_magnitude")
         elif field == "density":
             array = point_data.GetArray("density")
         else:
@@ -303,6 +321,32 @@ def generate_video_python(vtk_files, output_file, field, fps, width, height, col
             point_data.SetActiveScalars(array.GetName())
             mapper.SetScalarModeToUsePointData()
             mapper.SetColorModeToMapScalars()
+            mapper.SetScalarRange(array.GetRange())
+        
+        # Setup camera based on data bounds (do this for each frame in case bounds change)
+        bounds = data.GetBounds()
+        center_x = (bounds[0] + bounds[1]) / 2.0
+        center_y = (bounds[2] + bounds[3]) / 2.0
+        center_z = (bounds[4] + bounds[5]) / 2.0
+        
+        data_width = bounds[1] - bounds[0]
+        data_height = bounds[3] - bounds[2]
+        
+        # Setup camera to view XY plane
+        camera = renderer.GetActiveCamera()
+        camera.SetPosition(center_x, center_y, center_z + max(data_width, data_height))
+        camera.SetFocalPoint(center_x, center_y, center_z)
+        camera.SetViewUp(0, 1, 0)
+        camera.ParallelProjectionOn()
+        
+        # Set parallel scale to fit the data
+        if data_width / data_height > width / height:
+            camera.SetParallelScale(data_width / 2.0 * height / width)
+        else:
+            camera.SetParallelScale(data_height / 2.0)
+        
+        # Reset camera to show all data
+        renderer.ResetCamera()
         
         # Render
         renderWindow.Render()

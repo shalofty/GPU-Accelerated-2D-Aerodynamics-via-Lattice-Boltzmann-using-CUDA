@@ -1,0 +1,60 @@
+# Staggered grid of cylinders - creates interesting wake interactions
+# Cylinders arranged in a staggered pattern like a heat exchanger
+nx: 400
+ny: 350
+relaxation_time: 0.6
+max_timesteps: 5000
+output_interval: 50
+residual_tolerance: 1e-6
+backend_id: "cuda"
+obstacles:
+  # Row 1: 5 cylinders
+  - id: "row1_cyl1"
+    type: "cylinder"
+    parameters: [80.0, 70.0, 10.0]
+  - id: "row1_cyl2"
+    type: "cylinder"
+    parameters: [160.0, 70.0, 10.0]
+  - id: "row1_cyl3"
+    type: "cylinder"
+    parameters: [240.0, 70.0, 10.0]
+  - id: "row1_cyl4"
+    type: "cylinder"
+    parameters: [320.0, 70.0, 10.0]
+  
+  # Row 2: 4 cylinders (staggered, offset)
+  - id: "row2_cyl1"
+    type: "cylinder"
+    parameters: [120.0, 140.0, 10.0]
+  - id: "row2_cyl2"
+    type: "cylinder"
+    parameters: [200.0, 140.0, 10.0]
+  - id: "row2_cyl3"
+    type: "cylinder"
+    parameters: [280.0, 140.0, 10.0]
+  
+  # Row 3: 5 cylinders (aligned with row 1)
+  - id: "row3_cyl1"
+    type: "cylinder"
+    parameters: [80.0, 210.0, 10.0]
+  - id: "row3_cyl2"
+    type: "cylinder"
+    parameters: [160.0, 210.0, 10.0]
+  - id: "row3_cyl3"
+    type: "cylinder"
+    parameters: [240.0, 210.0, 10.0]
+  - id: "row3_cyl4"
+    type: "cylinder"
+    parameters: [320.0, 210.0, 10.0]
+  
+  # Row 4: 4 cylinders (staggered again)
+  - id: "row4_cyl1"
+    type: "cylinder"
+    parameters: [120.0, 280.0, 10.0]
+  - id: "row4_cyl2"
+    type: "cylinder"
+    parameters: [200.0, 280.0, 10.0]
+  - id: "row4_cyl3"
+    type: "cylinder"
+    parameters: [280.0, 280.0, 10.0]
+

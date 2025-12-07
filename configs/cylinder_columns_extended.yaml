@@ -1,0 +1,125 @@
+# Extended columns: 5 columns with 3, 5, 7, 9, and 11 cylinders
+# Longer simulation for ~20 second videos
+nx: 500
+ny: 400
+relaxation_time: 0.55
+max_timesteps: 40000  # Increased for longer videos (600 frames at 30fps = 20 seconds)
+output_interval: 20   # 30000/50 = 600 frames
+residual_tolerance: 1e-6
+backend_id: "cuda"
+obstacles:
+  # Column 1: 3 cylinders (x = 100)
+  - id: "col1_cyl1"
+    type: "cylinder"
+    parameters: [100.0, 100.0, 10.0]
+  - id: "col1_cyl2"
+    type: "cylinder"
+    parameters: [100.0, 200.0, 10.0]
+  - id: "col1_cyl3"
+    type: "cylinder"
+    parameters: [100.0, 300.0, 10.0]
+  
+  # Column 2: 5 cylinders (x = 150)
+  - id: "col2_cyl1"
+    type: "cylinder"
+    parameters: [150.0, 80.0, 10.0]
+  - id: "col2_cyl2"
+    type: "cylinder"
+    parameters: [150.0, 140.0, 10.0]
+  - id: "col2_cyl3"
+    type: "cylinder"
+    parameters: [150.0, 200.0, 10.0]
+  - id: "col2_cyl4"
+    type: "cylinder"
+    parameters: [150.0, 260.0, 10.0]
+  - id: "col2_cyl5"
+    type: "cylinder"
+    parameters: [150.0, 320.0, 10.0]
+  
+  # Column 3: 7 cylinders (x = 250)
+  - id: "col3_cyl1"
+    type: "cylinder"
+    parameters: [250.0, 60.0, 10.0]
+  - id: "col3_cyl2"
+    type: "cylinder"
+    parameters: [250.0, 110.0, 10.0]
+  - id: "col3_cyl3"
+    type: "cylinder"
+    parameters: [250.0, 160.0, 10.0]
+  - id: "col3_cyl4"
+    type: "cylinder"
+    parameters: [250.0, 210.0, 10.0]
+  - id: "col3_cyl5"
+    type: "cylinder"
+    parameters: [250.0, 260.0, 10.0]
+  - id: "col3_cyl6"
+    type: "cylinder"
+    parameters: [250.0, 310.0, 10.0]
+  - id: "col3_cyl7"
+    type: "cylinder"
+    parameters: [250.0, 360.0, 10.0]
+  
+  # Column 4: 9 cylinders (x = 350)
+  - id: "col4_cyl1"
+    type: "cylinder"
+    parameters: [350.0, 45.0, 10.0]
+  - id: "col4_cyl2"
+    type: "cylinder"
+    parameters: [350.0, 90.0, 10.0]
+  - id: "col4_cyl3"
+    type: "cylinder"
+    parameters: [350.0, 135.0, 10.0]
+  - id: "col4_cyl4"
+    type: "cylinder"
+    parameters: [350.0, 180.0, 10.0]
+  - id: "col4_cyl5"
+    type: "cylinder"
+    parameters: [350.0, 225.0, 10.0]
+  - id: "col4_cyl6"
+    type: "cylinder"
+    parameters: [350.0, 270.0, 10.0]
+  - id: "col4_cyl7"
+    type: "cylinder"
+    parameters: [350.0, 315.0, 10.0]
+  - id: "col4_cyl8"
+    type: "cylinder"
+    parameters: [350.0, 360.0, 10.0]
+  - id: "col4_cyl9"
+    type: "cylinder"
+    parameters: [350.0, 405.0, 10.0]
+  
+  # Column 5: 11 cylinders (x = 450)
+  - id: "col5_cyl1"
+    type: "cylinder"
+    parameters: [450.0, 35.0, 10.0]
+  - id: "col5_cyl2"
+    type: "cylinder"
+    parameters: [450.0, 75.0, 10.0]
+  - id: "col5_cyl3"
+    type: "cylinder"
+    parameters: [450.0, 115.0, 10.0]
+  - id: "col5_cyl4"
+    type: "cylinder"
+    parameters: [450.0, 155.0, 10.0]
+  - id: "col5_cyl5"
+    type: "cylinder"
+    parameters: [450.0, 195.0, 10.0]
+  - id: "col5_cyl6"
+    type: "cylinder"
+    parameters: [450.0, 235.0, 10.0]
+  - id: "col5_cyl7"
+    type: "cylinder"
+    parameters: [450.0, 275.0, 10.0]
+  - id: "col5_cyl8"
+    type: "cylinder"
+    parameters: [450.0, 315.0, 10.0]
+  - id: "col5_cyl9"
+    type: "cylinder"
+    parameters: [450.0, 355.0, 10.0]
+  - id: "col5_cyl10"
+    type: "cylinder"
+    parameters: [450.0, 395.0, 10.0]
+  - id: "col5_cyl11"
+    type: "cylinder"
+    parameters: [450.0, 435.0, 10.0]
+

@@ -1,0 +1,63 @@
+# Multiple columns of cylinders: 3, 5, and 7 cylinders per column
+# Column 1: 3 cylinders
+# Column 2: 5 cylinders  
+# Column 3: 7 cylinders
+nx: 400
+ny: 350
+relaxation_time: 0.6
+max_timesteps: 5000
+output_interval: 50
+residual_tolerance: 1e-6
+backend_id: "cuda"
+obstacles:
+  # Column 1: 3 cylinders (x = 100)
+  - id: "col1_cyl1"
+    type: "cylinder"
+    parameters: [100.0, 87.5, 10.0]
+  - id: "col1_cyl2"
+    type: "cylinder"
+    parameters: [100.0, 175.0, 10.0]
+  - id: "col1_cyl3"
+    type: "cylinder"
+    parameters: [100.0, 262.5, 10.0]
+  
+  # Column 2: 5 cylinders (x = 200)
+  - id: "col2_cyl1"
+    type: "cylinder"
+    parameters: [200.0, 70.0, 10.0]
+  - id: "col2_cyl2"
+    type: "cylinder"
+    parameters: [200.0, 122.5, 10.0]
+  - id: "col2_cyl3"
+    type: "cylinder"
+    parameters: [200.0, 175.0, 10.0]
+  - id: "col2_cyl4"
+    type: "cylinder"
+    parameters: [200.0, 227.5, 10.0]
+  - id: "col2_cyl5"
+    type: "cylinder"
+    parameters: [200.0, 280.0, 10.0]
+  
+  # Column 3: 7 cylinders (x = 300)
+  - id: "col3_cyl1"
+    type: "cylinder"
+    parameters: [300.0, 60.0, 10.0]
+  - id: "col3_cyl2"
+    type: "cylinder"
+    parameters: [300.0, 100.0, 10.0]
+  - id: "col3_cyl3"
+    type: "cylinder"
+    parameters: [300.0, 140.0, 10.0]
+  - id: "col3_cyl4"
+    type: "cylinder"
+    parameters: [300.0, 180.0, 10.0]
+  - id: "col3_cyl5"
+    type: "cylinder"
+    parameters: [300.0, 220.0, 10.0]
+  - id: "col3_cyl6"
+    type: "cylinder"
+    parameters: [300.0, 260.0, 10.0]
+  - id: "col3_cyl7"
+    type: "cylinder"
+    parameters: [300.0, 300.0, 10.0]
+
