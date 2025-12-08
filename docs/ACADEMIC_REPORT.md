@@ -711,6 +711,125 @@ Our results compare favorably with other GPU-accelerated LBM implementations:
 
 Note: Many literature results use multi-threaded CPU baselines, making direct comparison difficult.
 
+### 6.6 Challenges Faced
+
+The development of this GPU-accelerated LBM solver presented several significant technical challenges that required careful design decisions and iterative refinement.
+
+#### 6.6.1 CUDA Memory Management and Resource Handling
+
+**Challenge:** Managing device memory allocation, deallocation, and error handling in a robust, exception-safe manner.
+
+**Issues Encountered:**
+- **Memory Leaks**: Initial implementation lacked proper cleanup in destructors, leading to device memory leaks during long-running simulations
+- **Error Propagation**: CUDA errors (e.g., `cudaMalloc` failures) needed to be properly caught and converted to C++ exceptions for integration with the existing codebase
+- **Resource Lifecycle**: Ensuring all device buffers (distribution functions, macroscopic fields, obstacle masks) were properly allocated and released, even in error conditions
+
+**Solution:** Implemented RAII (Resource Acquisition Is Initialization) principles with automatic cleanup in destructors. All device memory allocations are wrapped in error-checking code that throws exceptions on failure, ensuring proper cleanup through stack unwinding:
+
+```cpp
+void CudaLbBackend::allocate_device_buffers(const SimulationConfig& config) {
+    // ... allocation code ...
+    if (cudaMalloc(&f_curr_, lattice_bytes) != cudaSuccess || ...) {
+        release_device_buffers();  // Cleanup on failure
+        throw std::runtime_error("Failed to allocate device buffers");
+    }
+}
+```
+
+#### 6.6.2 Memory Access Pattern Optimization
+
+**Challenge:** Achieving coalesced memory access patterns to maximize GPU memory bandwidth utilization.
+
+**Issues Encountered:**
+- **Non-coalesced Accesses**: Initial naive implementation accessed distribution functions in a non-optimal pattern, resulting in poor memory bandwidth utilization
+- **Index Calculation Overhead**: Complex index calculations in kernels reduced performance
+- **Memory Layout Trade-offs**: Choosing between Array-of-Structures (AoS) and Structure-of-Arrays (SoA) layouts required careful analysis
+
+**Solution:** Adopted Struct-of-Arrays (SoA) layout where all 9 distribution functions for each cell are stored consecutively. This enables threads in a warp to access consecutive memory locations when processing the same direction across different cells, achieving 100% memory coalescing. The row-major ordering of cells ensures that consecutive threads access consecutive memory locations.
+
+#### 6.6.3 Boundary Condition Implementation on GPU
+
+**Challenge:** Correctly implementing complex boundary conditions (lid-driven cavity, inflow/outflow, obstacles) in a parallel GPU environment.
+
+**Issues Encountered:**
+- **Race Conditions**: Initial boundary condition kernels had potential race conditions when multiple threads accessed boundary cells
+- **Obstacle Handling**: Bounce-back at obstacles required careful handling to avoid conflicts between streaming and boundary condition application
+- **Boundary Kernel Complexity**: Separate kernels for different boundary types (lid velocity, inflow/outflow, walls) needed careful synchronization to ensure correct application order
+
+**Solution:** Implemented boundary conditions as separate kernels that run after the collide-and-stream step, ensuring no conflicts with the main computation. Obstacle bounce-back is handled directly in the collide-and-stream kernel by checking the target cell before streaming, eliminating race conditions. Boundary condition kernels use appropriate thread indexing to avoid conflicts at boundary cells.
+
+#### 6.6.4 Shared Memory Tiling Optimization
+
+**Challenge:** Implementing shared memory tiling to reduce global memory traffic while managing limited shared memory resources.
+
+**Issues Encountered:**
+- **Shared Memory Limits**: GPU shared memory is limited (typically 48 KB per SM), constraining tile size
+- **Halo Region Management**: Tiles require halo regions for streaming, increasing shared memory requirements and complicating indexing
+- **Synchronization Overhead**: `__syncthreads()` calls needed for proper data loading before computation, adding synchronization overhead
+- **Thread Divergence**: Halo loading threads that fall outside the domain needed careful handling to avoid divergence
+
+**Solution:** Implemented a tiled kernel with 16×16 cell tiles and 1-cell halo regions. Halo threads load boundary data with proper bounds checking to avoid divergence. The shared memory usage (18 KB per block) allows good occupancy while providing significant reduction in global memory traffic. The optimization achieved ~10-15% speedup over the standard kernel.
+
+#### 6.6.5 Debugging and Validation
+
+**Challenge:** Debugging GPU code is significantly more difficult than CPU code, requiring specialized tools and techniques.
+
+**Issues Encountered:**
+- **Limited Debugging Tools**: Traditional debuggers are less effective for GPU code; CUDA-GDB and Nsight provide some capabilities but with limitations
+- **Floating-Point Differences**: Small numerical differences between CPU and CUDA implementations due to different execution orders made validation challenging
+- **Silent Failures**: CUDA kernels can fail silently or produce incorrect results without obvious errors
+- **Performance Profiling**: Identifying performance bottlenecks required learning CUDA profiling tools (nvprof, Nsight Compute)
+
+**Solution:** Developed a comprehensive validation suite that compares CPU and CUDA results with appropriate tolerances. Implemented extensive unit tests and comparison tests that verify numerical accuracy. Used CPU backend as a reference implementation for debugging CUDA kernels. Performance profiling was conducted systematically using CUDA profiling tools to identify bottlenecks.
+
+#### 6.6.6 Synchronization and Double Buffering
+
+**Challenge:** Ensuring correct data flow in the collide-and-stream operation without race conditions or unnecessary synchronization.
+
+**Issues Encountered:**
+- **Data Races**: Initial implementation attempted to stream in-place, causing race conditions when threads read and wrote to the same memory locations
+- **Synchronization Overhead**: Excessive `cudaDeviceSynchronize()` calls reduced performance by preventing overlap of computation and memory operations
+- **Buffer Management**: Managing two buffers (current and next) required careful tracking to avoid errors
+
+**Solution:** Implemented double buffering where each timestep reads from `f_curr_` and writes to `f_next_`, then swaps buffers. This eliminates all race conditions without requiring synchronization barriers. CUDA streams are used for asynchronous operations, reducing synchronization overhead. The buffer swap is a simple pointer exchange, adding minimal overhead.
+
+#### 6.6.7 Build System and Cross-Platform Compatibility
+
+**Challenge:** Creating a build system that supports both CPU and CUDA backends with conditional compilation.
+
+**Issues Encountered:**
+- **CMake CUDA Integration**: Configuring CMake to properly detect CUDA and compile `.cu` files required careful setup
+- **Conditional Compilation**: Code needed to compile both with and without CUDA support, requiring `#ifdef` guards throughout
+- **Dependency Management**: Ensuring CUDA toolkit and runtime libraries are properly linked
+- **Cross-Platform Issues**: Different CUDA installation paths and versions across development environments
+
+**Solution:** Implemented a robust CMake configuration with `ENABLE_CUDA` option that defaults to ON when CUDA is detected. All CUDA-specific code is wrapped in `#ifdef ENABLE_CUDA` guards. The build system automatically downloads test dependencies (Catch2) and handles CUDA toolkit detection. Forward declarations are used when CUDA is disabled to maintain compilation.
+
+#### 6.6.8 Performance Optimization Iteration
+
+**Challenge:** Achieving significant speedup required multiple optimization iterations and understanding GPU architecture.
+
+**Issues Encountered:**
+- **Initial Poor Performance**: First CUDA implementation showed only 2-3x speedup, well below expectations
+- **Memory Bandwidth Saturation**: Understanding that the algorithm is memory-bound, not compute-bound, required profiling insights
+- **Occupancy vs. Register Pressure**: Balancing thread block size, shared memory usage, and register count to maximize occupancy
+- **Optimization Diminishing Returns**: Some optimizations (e.g., shared memory tiling) provided less benefit than theoretically expected
+
+**Solution:** Conducted systematic performance analysis using CUDA profiling tools. Identified memory bandwidth as the primary bottleneck. Optimized memory access patterns first (coalescing), then implemented shared memory tiling. Accepted that some optimizations have limited impact due to the memory-bound nature of the algorithm. Focused on optimizations that provide the best return on implementation effort.
+
+#### 6.6.9 Numerical Accuracy and Precision
+
+**Challenge:** Ensuring that CUDA optimizations do not compromise numerical accuracy compared to the CPU reference implementation.
+
+**Issues Encountered:**
+- **Floating-Point Ordering**: Different execution order on GPU vs. CPU leads to small numerical differences due to floating-point associativity
+- **Precision Loss**: Concerns about potential precision loss from optimizations or different computation paths
+- **Validation Thresholds**: Determining appropriate tolerances for comparing CPU and CUDA results
+
+**Solution:** Validated that CPU and CUDA backends produce identical results (within floating-point tolerance) for small grids and <1e-10 relative error for large grids. The differences are due to floating-point arithmetic order, not algorithmic errors. Established validation suite with appropriate tolerances that account for these expected differences.
+
+These challenges highlight the complexity of GPU programming and the importance of systematic design, thorough testing, and iterative optimization. The solutions developed provide a robust foundation for future extensions and improvements.
+
 ---
 
 ## 7. Conclusion
