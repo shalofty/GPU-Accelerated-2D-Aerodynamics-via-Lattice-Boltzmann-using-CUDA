@@ -52,7 +52,7 @@ The Lattice Boltzmann Method is a mesoscopic approach to fluid dynamics that mod
 
 ### 2.1 D2Q9 Lattice Model
 
-The D2Q9 model uses a 2D square lattice with 9 discrete velocity directions (Figure 1). Each lattice site contains 9 distribution functions \(f_i(\mathbf{x}, t)\) representing the probability density of particles moving in direction \(i\) at position \(\mathbf{x}\) and time \(t\).
+The D2Q9 model uses a 2D square lattice with 9 discrete velocity directions (Figure 1). Each lattice site contains 9 distribution functions $f_i(\mathbf{x}, t)$ representing the probability density of particles moving in direction $i$ at position $\mathbf{x}$ and time $t$.
 
 ![D2Q9 Lattice Model](images/d2q9_lattice.png)
 *Figure 1: D2Q9 lattice model showing the 9 discrete velocity directions (c₀ through c₈) with their corresponding weights. The central cell represents the rest particle (i=0), cardinal directions (i=1-4) are shown in red, and diagonal directions (i=5-8) in blue.*
